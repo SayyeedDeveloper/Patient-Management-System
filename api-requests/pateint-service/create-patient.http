@@ -1,0 +1,11 @@
+### Create Patient
+POST localhost:4000/patients
+Content-Type: application/json
+
+{
+  "name": "Muhammadsayyid",
+  "email": "tursunov@icloud.com",
+  "address": "Beshkaram,",
+  "dateOfBirth": "2004-06-20",
+  "registeredDate": "2030-03-20"
+}
