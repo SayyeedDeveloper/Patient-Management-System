@@ -1,5 +1,6 @@
 package sayyeed.dev.patient_service.service;
 
+import billing.BillingServiceGrpc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -7,6 +8,7 @@ import sayyeed.dev.patient_service.dto.PatientRequestDTO;
 import sayyeed.dev.patient_service.dto.PatientResponseDTO;
 import sayyeed.dev.patient_service.exception.EmailAlreadyExistsException;
 import sayyeed.dev.patient_service.exception.PatientNotFoundException;
+import sayyeed.dev.patient_service.grpc.BillingServiceGrpcClient;
 import sayyeed.dev.patient_service.mapper.PatientMapper;
 import sayyeed.dev.patient_service.model.Patient;
 import sayyeed.dev.patient_service.repository.PatientRepository;
@@ -20,9 +22,11 @@ import java.util.UUID;
 public class PatientService {
     private static final Logger log = LoggerFactory.getLogger(PatientService.class);
     private final PatientRepository patientRepository;
+    private final BillingServiceGrpcClient billingServiceGrpcClient;
 
-    public PatientService(PatientRepository patientRepository) {
+    public PatientService(PatientRepository patientRepository, BillingServiceGrpcClient billingServiceGrpcClient) {
         this.patientRepository = patientRepository;
+        this.billingServiceGrpcClient = billingServiceGrpcClient;
     }
 
     public List<PatientResponseDTO> getPatients() {
@@ -39,6 +43,11 @@ public class PatientService {
 
         Patient newPatient = patientRepository.save(
                 PatientMapper.toModel(patientRequestDTO));
+
+        billingServiceGrpcClient.createBillingAccount(
+                newPatient.getId().toString(),
+                newPatient.getName(),
+                newPatient.getEmail());
 
         return PatientMapper.toDTO(newPatient);
     }
